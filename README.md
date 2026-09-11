@@ -102,6 +102,12 @@ Current JSON node support covers common layout and display widgets:
 - `Image`
 - `TextBlock`
 - `ProgressBar`
+- `Button`
+- `Slider`
+- `SpinBox`
+- `CheckBox`
+- `ComboBoxString`
+- `ScrollBox`
 - `Spacer`
 - `UserWidget` via `props.class`
 

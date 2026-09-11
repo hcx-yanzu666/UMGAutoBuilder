@@ -5,16 +5,22 @@
 #include "Blueprint/WidgetBlueprintGeneratedClass.h"
 #include "Blueprint/WidgetTree.h"
 #include "Components/Border.h"
+#include "Components/Button.h"
 #include "Components/CanvasPanel.h"
 #include "Components/CanvasPanelSlot.h"
+#include "Components/CheckBox.h"
+#include "Components/ComboBoxString.h"
 #include "Components/HorizontalBox.h"
 #include "Components/HorizontalBoxSlot.h"
 #include "Components/Image.h"
 #include "Components/Overlay.h"
 #include "Components/OverlaySlot.h"
 #include "Components/ProgressBar.h"
+#include "Components/ScrollBox.h"
 #include "Components/SizeBox.h"
 #include "Components/Spacer.h"
+#include "Components/SpinBox.h"
+#include "Components/Slider.h"
 #include "Components/TextBlock.h"
 #include "Components/VerticalBox.h"
 #include "Components/VerticalBoxSlot.h"
@@ -175,10 +181,16 @@ namespace GG_UMGAutoBuilder
 		if (Type.Equals(TEXT("HorizontalBox"), ESearchCase::IgnoreCase)) return UHorizontalBox::StaticClass();
 		if (Type.Equals(TEXT("WrapBox"), ESearchCase::IgnoreCase)) return UWrapBox::StaticClass();
 		if (Type.Equals(TEXT("Border"), ESearchCase::IgnoreCase)) return UBorder::StaticClass();
+		if (Type.Equals(TEXT("Button"), ESearchCase::IgnoreCase)) return UButton::StaticClass();
 		if (Type.Equals(TEXT("SizeBox"), ESearchCase::IgnoreCase)) return USizeBox::StaticClass();
 		if (Type.Equals(TEXT("Image"), ESearchCase::IgnoreCase)) return UImage::StaticClass();
 		if (Type.Equals(TEXT("TextBlock"), ESearchCase::IgnoreCase)) return UTextBlock::StaticClass();
 		if (Type.Equals(TEXT("ProgressBar"), ESearchCase::IgnoreCase)) return UProgressBar::StaticClass();
+		if (Type.Equals(TEXT("ScrollBox"), ESearchCase::IgnoreCase)) return UScrollBox::StaticClass();
+		if (Type.Equals(TEXT("Slider"), ESearchCase::IgnoreCase)) return USlider::StaticClass();
+		if (Type.Equals(TEXT("SpinBox"), ESearchCase::IgnoreCase)) return USpinBox::StaticClass();
+		if (Type.Equals(TEXT("CheckBox"), ESearchCase::IgnoreCase)) return UCheckBox::StaticClass();
+		if (Type.Equals(TEXT("ComboBoxString"), ESearchCase::IgnoreCase)) return UComboBoxString::StaticClass();
 		if (Type.Equals(TEXT("Spacer"), ESearchCase::IgnoreCase)) return USpacer::StaticClass();
 		return nullptr;
 	}
@@ -255,6 +267,12 @@ namespace GG_UMGAutoBuilder
 
 		ApplyCommonWidgetFlags(Widget, PropsObj);
 
+		bool bEnabled = true;
+		if (PropsObj->TryGetBoolField(TEXT("enabled"), bEnabled))
+		{
+			Widget->SetIsEnabled(bEnabled);
+		}
+
 		if (UTextBlock* Text = Cast<UTextBlock>(Widget))
 		{
 			FString S;
@@ -306,6 +324,85 @@ namespace GG_UMGAutoBuilder
 			{
 				PB->SetFillColorAndOpacity(ReadColor(PropsObj, TEXT("fillColor"), FLinearColor::White));
 			}
+		}
+		else if (UButton* Button = Cast<UButton>(Widget))
+		{
+			if (PropsObj->HasField(TEXT("backgroundColor")))
+			{
+				Button->SetBackgroundColor(ReadColor(PropsObj, TEXT("backgroundColor"), FLinearColor::White));
+			}
+			if (PropsObj->HasField(TEXT("contentColor")))
+			{
+				Button->SetColorAndOpacity(ReadColor(PropsObj, TEXT("contentColor"), FLinearColor::White));
+			}
+		}
+		else if (USlider* Slider = Cast<USlider>(Widget))
+		{
+			double Number = 0.0;
+			if (PropsObj->TryGetNumberField(TEXT("minValue"), Number)) Slider->SetMinValue(static_cast<float>(Number));
+			if (PropsObj->TryGetNumberField(TEXT("maxValue"), Number)) Slider->SetMaxValue(static_cast<float>(Number));
+			if (PropsObj->TryGetNumberField(TEXT("value"), Number)) Slider->SetValue(static_cast<float>(Number));
+			if (PropsObj->TryGetNumberField(TEXT("stepSize"), Number)) Slider->SetStepSize(static_cast<float>(Number));
+			if (PropsObj->HasField(TEXT("barColor")))
+			{
+				Slider->SetSliderBarColor(ReadColor(PropsObj, TEXT("barColor"), FLinearColor::White));
+			}
+			if (PropsObj->HasField(TEXT("handleColor")))
+			{
+				Slider->SetSliderHandleColor(ReadColor(PropsObj, TEXT("handleColor"), FLinearColor::White));
+			}
+		}
+		else if (USpinBox* SpinBox = Cast<USpinBox>(Widget))
+		{
+			double Number = 0.0;
+			if (PropsObj->TryGetNumberField(TEXT("minValue"), Number)) SpinBox->SetMinValue(static_cast<float>(Number));
+			if (PropsObj->TryGetNumberField(TEXT("maxValue"), Number)) SpinBox->SetMaxValue(static_cast<float>(Number));
+			if (PropsObj->TryGetNumberField(TEXT("minSliderValue"), Number)) SpinBox->SetMinSliderValue(static_cast<float>(Number));
+			if (PropsObj->TryGetNumberField(TEXT("maxSliderValue"), Number)) SpinBox->SetMaxSliderValue(static_cast<float>(Number));
+			if (PropsObj->TryGetNumberField(TEXT("value"), Number)) SpinBox->SetValue(static_cast<float>(Number));
+			if (PropsObj->TryGetNumberField(TEXT("delta"), Number)) SpinBox->SetDelta(static_cast<float>(Number));
+			if (PropsObj->TryGetNumberField(TEXT("minFractionalDigits"), Number)) SpinBox->SetMinFractionalDigits(static_cast<int32>(Number));
+			if (PropsObj->TryGetNumberField(TEXT("maxFractionalDigits"), Number)) SpinBox->SetMaxFractionalDigits(static_cast<int32>(Number));
+			if (PropsObj->TryGetNumberField(TEXT("minDesiredWidth"), Number)) SpinBox->SetMinDesiredWidth(static_cast<float>(Number));
+			if (PropsObj->HasField(TEXT("foregroundColor")))
+			{
+				SpinBox->SetForegroundColor(FSlateColor(ReadColor(PropsObj, TEXT("foregroundColor"), FLinearColor::White)));
+			}
+		}
+		else if (UCheckBox* CheckBox = Cast<UCheckBox>(Widget))
+		{
+			bool bChecked = false;
+			if (PropsObj->TryGetBoolField(TEXT("checked"), bChecked))
+			{
+				CheckBox->SetIsChecked(bChecked);
+			}
+		}
+		else if (UComboBoxString* ComboBox = Cast<UComboBoxString>(Widget))
+		{
+			const TArray<TSharedPtr<FJsonValue>>* Options = nullptr;
+			if (PropsObj->TryGetArrayField(TEXT("options"), Options) && Options)
+			{
+				ComboBox->ClearOptions();
+				for (const TSharedPtr<FJsonValue>& Option : *Options)
+				{
+					if (Option.IsValid()) ComboBox->AddOption(Option->AsString());
+				}
+			}
+
+			FString SelectedOption;
+			if (PropsObj->TryGetStringField(TEXT("selectedOption"), SelectedOption))
+			{
+				ComboBox->SetSelectedOption(SelectedOption);
+			}
+		}
+		else if (UScrollBox* ScrollBox = Cast<UScrollBox>(Widget))
+		{
+			bool bValue = false;
+			if (PropsObj->TryGetBoolField(TEXT("alwaysShowScrollbar"), bValue)) ScrollBox->SetAlwaysShowScrollbar(bValue);
+			if (PropsObj->TryGetBoolField(TEXT("allowOverscroll"), bValue)) ScrollBox->SetAllowOverscroll(bValue);
+			if (PropsObj->TryGetBoolField(TEXT("animateWheelScrolling"), bValue)) ScrollBox->SetAnimateWheelScrolling(bValue);
+			double Number = 0.0;
+			if (PropsObj->TryGetNumberField(TEXT("wheelScrollMultiplier"), Number)) ScrollBox->SetWheelScrollMultiplier(static_cast<float>(Number));
 		}
 		else if (UWrapBox* Wrap = Cast<UWrapBox>(Widget))
 		{
@@ -827,6 +924,10 @@ namespace GG_UMGAutoBuilder
 		}
 
 		Tree->RootWidget = RootWidget;
+
+		// Build 模式会替换整棵 WidgetTree。旧控件变量已不存在，必须同步清除
+		// 它们的 GUID；否则 UE 编译器会把旧 GUID 视为已删除但仍被引用的变量。
+		WidgetBP->WidgetVariableNameToGuidMap.Reset();
 		FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(WidgetBP);
 		WidgetBP->MarkPackageDirty();
 		return !Report.HasErrors();
@@ -1143,6 +1244,7 @@ namespace GG_UMGAutoBuilder
 		if (!Widget) return Props;
 
 		Props->SetBoolField(TEXT("isVariable"), Widget->bIsVariable);
+		Props->SetBoolField(TEXT("enabled"), Widget->GetIsEnabled());
 
 		if (const UUserWidget* UW = Cast<UUserWidget>(Widget))
 		{
@@ -1170,6 +1272,54 @@ namespace GG_UMGAutoBuilder
 		{
 			Props->SetNumberField(TEXT("percent"), PB->GetPercent());
 			Props->SetArrayField(TEXT("fillColor"), ColorToJson(PB->GetFillColorAndOpacity()));
+		}
+		else if (const UButton* Button = Cast<UButton>(Widget))
+		{
+			Props->SetArrayField(TEXT("backgroundColor"), ColorToJson(Button->GetBackgroundColor()));
+			Props->SetArrayField(TEXT("contentColor"), ColorToJson(Button->GetColorAndOpacity()));
+		}
+		else if (const USlider* Slider = Cast<USlider>(Widget))
+		{
+			Props->SetNumberField(TEXT("minValue"), Slider->GetMinValue());
+			Props->SetNumberField(TEXT("maxValue"), Slider->GetMaxValue());
+			Props->SetNumberField(TEXT("value"), Slider->GetValue());
+			Props->SetNumberField(TEXT("stepSize"), Slider->GetStepSize());
+			Props->SetArrayField(TEXT("barColor"), ColorToJson(Slider->GetSliderBarColor()));
+			Props->SetArrayField(TEXT("handleColor"), ColorToJson(Slider->GetSliderHandleColor()));
+		}
+		else if (const USpinBox* SpinBox = Cast<USpinBox>(Widget))
+		{
+			Props->SetNumberField(TEXT("minValue"), SpinBox->GetMinValue());
+			Props->SetNumberField(TEXT("maxValue"), SpinBox->GetMaxValue());
+			Props->SetNumberField(TEXT("minSliderValue"), SpinBox->GetMinSliderValue());
+			Props->SetNumberField(TEXT("maxSliderValue"), SpinBox->GetMaxSliderValue());
+			Props->SetNumberField(TEXT("value"), SpinBox->GetValue());
+			Props->SetNumberField(TEXT("delta"), SpinBox->GetDelta());
+			Props->SetNumberField(TEXT("minFractionalDigits"), SpinBox->GetMinFractionalDigits());
+			Props->SetNumberField(TEXT("maxFractionalDigits"), SpinBox->GetMaxFractionalDigits());
+			Props->SetNumberField(TEXT("minDesiredWidth"), SpinBox->GetMinDesiredWidth());
+			Props->SetArrayField(TEXT("foregroundColor"), ColorToJson(SpinBox->GetForegroundColor().GetSpecifiedColor()));
+		}
+		else if (const UCheckBox* CheckBox = Cast<UCheckBox>(Widget))
+		{
+			Props->SetBoolField(TEXT("checked"), CheckBox->IsChecked());
+		}
+		else if (const UComboBoxString* ComboBox = Cast<UComboBoxString>(Widget))
+		{
+			TArray<TSharedPtr<FJsonValue>> Options;
+			for (int32 Index = 0; Index < ComboBox->GetOptionCount(); ++Index)
+			{
+				Options.Add(MakeShared<FJsonValueString>(ComboBox->GetOptionAtIndex(Index)));
+			}
+			Props->SetArrayField(TEXT("options"), Options);
+			Props->SetStringField(TEXT("selectedOption"), ComboBox->GetSelectedOption());
+		}
+		else if (const UScrollBox* ScrollBox = Cast<UScrollBox>(Widget))
+		{
+			Props->SetBoolField(TEXT("alwaysShowScrollbar"), ScrollBox->IsAlwaysShowScrollbar());
+			Props->SetBoolField(TEXT("allowOverscroll"), ScrollBox->IsAllowOverscroll());
+			Props->SetBoolField(TEXT("animateWheelScrolling"), ScrollBox->IsAnimateWheelScrolling());
+			Props->SetNumberField(TEXT("wheelScrollMultiplier"), ScrollBox->GetWheelScrollMultiplier());
 		}
 		else if (const UWrapBox* Wrap = Cast<UWrapBox>(Widget))
 		{
@@ -1268,6 +1418,12 @@ namespace GG_UMGAutoBuilder
 		else if (Widget->IsA<UImage>()) Node->SetStringField(TEXT("type"), TEXT("Image"));
 		else if (Widget->IsA<UTextBlock>()) Node->SetStringField(TEXT("type"), TEXT("TextBlock"));
 		else if (Widget->IsA<UProgressBar>()) Node->SetStringField(TEXT("type"), TEXT("ProgressBar"));
+		else if (Widget->IsA<UButton>()) Node->SetStringField(TEXT("type"), TEXT("Button"));
+		else if (Widget->IsA<USlider>()) Node->SetStringField(TEXT("type"), TEXT("Slider"));
+		else if (Widget->IsA<USpinBox>()) Node->SetStringField(TEXT("type"), TEXT("SpinBox"));
+		else if (Widget->IsA<UCheckBox>()) Node->SetStringField(TEXT("type"), TEXT("CheckBox"));
+		else if (Widget->IsA<UComboBoxString>()) Node->SetStringField(TEXT("type"), TEXT("ComboBoxString"));
+		else if (Widget->IsA<UScrollBox>()) Node->SetStringField(TEXT("type"), TEXT("ScrollBox"));
 		else if (Widget->IsA<USpacer>()) Node->SetStringField(TEXT("type"), TEXT("Spacer"));
 
 		Node->SetStringField(TEXT("name"), Widget->GetFName().ToString());

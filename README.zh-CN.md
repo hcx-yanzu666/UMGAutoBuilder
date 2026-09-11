@@ -102,6 +102,12 @@ UnrealEditor-Cmd.exe "<YourProject>.uproject" `
 - `Image`
 - `TextBlock`
 - `ProgressBar`
+- `Button`
+- `Slider`
+- `SpinBox`
+- `CheckBox`
+- `ComboBoxString`
+- `ScrollBox`
 - `Spacer`
 - `UserWidget`，通过 `props.class` 指定
 
